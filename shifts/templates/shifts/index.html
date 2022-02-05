@@ -1,0 +1,357 @@
+{% extends "shifts/layout.html" %}
+{% load static %}
+
+{% block body %}
+<div class="main-container">
+    <!--Navigation system -->
+    <div class="menu-container">
+        <h2>Timekeeping</h2>   
+        <h4>Logged as: {{ user.username }}</h4>                                      
+        <div class="btn-group">
+            <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Settings
+                <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+                <li><a id="menu-Employees" href="#">Employees</a></li>
+                <li><a id="menu-Shifts" href="#">Shifts</a></li>
+                <li><a id="menu-Slices" href="#">Shifts Slices</a></li>
+                <li><a id="menu-Schedule" href="#">Schedule</a></li>
+            </ul>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">System
+            <span class="caret"></span></button>
+            <ul class="dropdown-menu">
+                <li><a id="menu-Evaluation" href="#">Time Evaluation</a></li>
+                <li><a id="menu-Help" href="#">Help</a></li>
+                <li><a href="{% url 'logout' %}">Logout</a></li>
+            </ul>
+        </div>
+        <hr>
+    </div>
+       
+    <!--FORMS VIEWS------------------------------------------------------------------------------- -->
+
+    <!--VIEW: Create new employee frmNe-->
+    <div id="view-NewEmployee"> 
+        <h3>New employee</h3>   
+        <div class="form-group">
+            <label>Employee Id</label>
+            <input id="frmNeField-employeeId" class="form-control"  placeholder="Enter company employee Id" maxlength="10">
+            <small class="form-text text-muted">Employee Id is the unique number which identifies this employee in the company.</small>
+        </div>     
+        <div class="form-group">
+            <label>First Name</label>
+            <input id="frmNeField-firstName" class="form-control"  placeholder="Enter first name here" maxlength="20">
+        </div>
+        <div class="form-group">
+            <label>Last Name</label>
+            <input id="frmNeField-lastName" class="form-control"  placeholder="Enter last name here" maxlength="20">
+        </div> 
+        <input id="btn-SubmitNewEmployee" class="btn btn-primary" type="button" value = "Submit" />
+    </div>
+
+    <!--VIEW: Create new employee frmNsh-->
+    <div id="view-NewShift"> 
+        <h3>New shift</h3>        
+        <div class="form-group">
+            <label>Label</label>
+            <input id="frmNshField-label" class="form-control"  placeholder="Enter a short name  here" maxlength="6" >
+        </div>
+        <div class="form-group">
+            <label>Description</label>
+            <input id="frmNshField-description" class="form-control"  placeholder="Enter a detaliled description here" maxlength="64">
+        </div>
+        <input id="btn-SubmitNewShift" class="btn btn-primary" type="button" value = "Submit" />
+    </div>
+
+    <!--VIEW: Create new slice frmNsl-->
+    <div id="view-NewSlice"> 
+        <h3>New shift slice</h3>
+
+        <div class="form-group">
+            <label>Shift</label>
+            <!--<input id="frmNslField-shift" class="form-control"  placeholder="Enter a shift"> -->
+            <select id="frmNslField-shiftLabel" class="form-control">
+                <!--options dinamicaly added-->
+            </select>
+            <small class="form-text text-muted">If no options here, go settings->Shifts to prepopulate it.</small>
+        </div>
+        <div class="form-group">
+            <label>Label</label>
+            <input id="frmNslField-label" class="form-control"  placeholder="Enter a short name  here" maxlength="6">
+            <small class="form-text text-muted">Slices will be ordered by this short description.</small>
+        </div>
+        <div class="form-group">
+            <label>Description</label>
+            <input id="frmNslField-description" class="form-control"  placeholder="Enter a detaliled description here" maxlength="32">
+        </div>
+       <div class="form-group">
+            <label>Stamp Group</label>
+            <input id="frmNslField-stampGroup" class="form-control"  placeholder="Enter a stamp agrupator here" maxlength="3">
+            <small class="form-text text-muted">This slice only will catch time pairs in wich stamps have this atribute.</small>
+        </div>
+        <div class="form-group">
+            <label>Start</label>
+            <input id="frmNslField-start" class="form-control"  placeholder="Enter a start minute" maxlength="4">
+            <small class="form-text text-muted">From 0 to 4319. 0 means previous day at 0:00, 4319 means next day al 23:59.</small>
+        </div>
+        <div class="form-group">
+            <label>End</label>
+            <input id="frmNslField-end" class="form-control"  placeholder="Enter a end minute" maxlength="4">
+            <small class="form-text text-muted">From 0 to 4319. End must be greather than Start.</small>
+        </div>
+        <div class="form-group">
+            <label>Required</label>
+            <input id="frmNslField-requiredTime" class="form-control"  placeholder="Enter a required minutes" maxlength="4">
+            <small class="form-text text-muted">From 0 to max minutes in this slice. This is de time who employee must work.</small>
+            <small class="form-text text-muted">If required envolves whole slice, it's a FIXED slice. otherwise it's a FLEX.</small>
+        </div>
+        <div class="form-group">
+            <label>P-Code</label>
+            <input id="frmNslField-presenceCode" class="form-control"  placeholder="Enter a presence code" maxlength="3">
+            <small class="form-text text-muted">Required working time will be clasify with this code.</small>
+            <small class="form-text text-muted">If no required time, It doesn't have efect.</small>
+        </div>
+        <div class="form-group">
+            <label>A-Code</label>
+            <input id="frmNslField-absenceCode" class="form-control"  placeholder="Enter a absence code" maxlength="3">
+            <small class="form-text text-muted">Missing work in required time will be clasify with this code.</small>
+            <small class="form-text text-muted">If no required time, It doesn't have efect.</small>
+        </div>
+        <div class="form-group">
+            <label>O-Code</label>
+            <input id="frmNslField-overtimeCode" class="form-control"  placeholder="Enter a overtime code" maxlength="3">
+            <small class="form-text text-muted">Overtime time will be clasify with this code.</small>
+            <small class="form-text text-muted">If required time covers all slice, It doesn't have efect.</small>
+        </div>
+        <div class="form-group">
+            <label>O-Min</label>
+            <input id="frmNslField-overtimeMin" class="form-control"  placeholder="Enter a overtime minimum" maxlength="3">
+            <small class="form-text text-muted">Minimum minutes for Overtime time generation.</small>
+        </div>
+        <div class="form-group">
+            <label>O-Step</label>
+            <input id="frmNslField-overtimeStep" class="form-control"  placeholder="Enter a overtime step" maxlength="3">
+            <small class="form-text text-muted">Minimum minutes for Overtime time next steps.</small>
+            <small class="form-text text-muted">Valid overtime amounts: Minimum + n*step (n=0,1,2...)</small>
+        </div>
+        <input id="btn-SubmitNewSlice" class="btn btn-primary" type="button" value = "Submit" />
+    </div>
+
+    <!--VIEW: Create new schedule frmNsc-->
+    <div id="view-NewSchedule"> 
+        <h3>New shift schedule</h3>
+        <div class="form-group">
+            <label>Date</label>
+            <input id="frmNscField-day" class="form-control"  placeholder="Enter a date in YYYY-MM-DD format" maxlength="10">
+        </div>
+        <div class="form-group">
+            <label>Shift</label>
+            <select id="frmNscField-shiftLabel" class="form-control">
+                <!--options dinamicaly added-->
+            </select>
+            <small class="form-text text-muted">If no options here, go settings->Shifts to prepopulate it.</small>
+        </div>
+        <div class="form-group">
+            <label>Employee Id</label>
+            <select id="frmNscField-employeeId" class="form-control">
+                <!--options dinamicaly added-->
+            </select>
+            <small class="form-text text-muted">If no options here, go settings->Employees to prepopulate it.</small>
+        </div>       
+        <input id="btn-SubmitNewSchedule" class="btn btn-primary" type="button" value = "Submit" />
+    </div>
+
+    <!--VIEW: Create new stamp frmNst-->
+    <div id="view-NewStamp"> 
+        <h3>New Clock Timestamp</h3>
+        <div class="form-group">
+            <label>Stamp group</label>
+            <input id="frmNstField-stampGroup" class="form-control"  placeholder="Enter a stamp agrupator" maxlength="3">
+            <small class="form-text text-muted">It separates stamps and allow to generate diferent time rules for each group.</small>
+        </div>
+        <div class="form-group">
+            <label>Employee Id</label>
+            <select id="frmNstField-employeeId" class="form-control">
+                <!--options dinamicaly added-->
+            </select>
+            <small class="form-text text-muted">If no options here, go settings->Employees to prepopulate it.</small>
+        </div>   
+        <div class="form-group">
+            <label>Stamp Type</label>
+            <select id="frmNstField-stampType" class="form-control">
+                <option>IN</option>
+                <option>OU</option>
+            </select>
+            <small class="form-text text-muted">IN=Input/Entrance OU=Output/Leave.</small>            
+        </div>
+        <div class="form-group">
+            <label>Timestamp</label>
+            <input id="frmNstField-timestamp" class="form-control"  placeholder="Enter a timestamp" maxlength="19">
+            <small class="form-text text-muted">Format: YYYY-MM-DD hh:mm:ss.</small>
+        </div>              
+        <input id="btn-SubmitNewStamp" class="btn btn-primary" type="button" value = "Submit" />
+    </div>
+
+    <!--LIST VIEWS------------------------------------------------------------------------------- -->
+
+    <!--VIEW: Employee list -->
+    <div id="view-EmployeeList">
+        <h3>Employees</h3>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th scope="col">Employee Id</th>
+                    <th scope="col">First Name</th>
+                    <th scope="col">Last Name</th>
+                    <th scope="col">
+                        <button id="btn-NewEmployee" type="button" class="btn btn-success"><i class="fas fa-edit">New</i></button>
+                    </th>
+                </tr>
+            </thead>
+            <tbody id="tbody-EmployeeList">
+                <!--DATA ROWS -->
+            </tbody>
+        </table>
+    </div>
+
+    <!--VIEW: Shift list -->
+    <div id="view-ShiftList">
+        <h3>Shifts</h3>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th scope="col">Label</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">
+                        <button id="btn-NewShift" type="button" class="btn btn-success"><i class="fas fa-edit">New</i></button>
+                    </th>
+                </tr>
+            </thead>
+            <tbody id="tbody-ShiftList">
+                <!--DATA ROWS -->
+            </tbody>
+        </table>
+    </div>
+
+    <!--VIEW: Slice list -->
+    <div id="view-SliceList">
+        <h3>Shift Slices - Time Catchers</h3>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th scope="col">Shift</th>
+                    <th scope="col">Label</th>
+                    <th scope="col">Desc.</th>
+                    <th scope="col">Group</th>
+                    <th scope="col">Start</th>
+                    <th scope="col">End</th>
+                    <th scope="col">Req.</th>
+                    <th scope="col">P-Code</th>
+                    <th scope="col">A-Code</th>
+                    <th scope="col">O-Code</th>
+                    <th scope="col">O-Min</th>
+                    <th scope="col">O-Step</th>
+                    <th scope="col">
+                        <button id="btn-NewSlice" type="button" class="btn btn-success"><i class="fas fa-edit">New</i></button>
+                    </th>
+                </tr>
+            </thead>
+            <tbody id="tbody-SliceList">
+                <!--DATA ROWS -->
+            </tbody>
+        </table>
+    </div>
+
+    <!--VIEW: Schedule list -->
+    <div id="view-ScheduleList">
+        <h3>Shift Schedule</h3>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th scope="col">Date</th>
+                    <th scope="col">Employee Id</th>
+                    <th scope="col">Shift</th>
+                    <th scope="col">
+                        <button id="btn-NewSchedule" type="button" class="btn btn-success"><i class="fas fa-edit">New</i></button>
+                    </th>
+                </tr>
+            </thead>
+            <tbody id="tbody-ScheduleList">
+                <!--DATA ROWS -->
+            </tbody>
+        </table>
+    </div>
+
+    <!--VIEW: Show stamp errors -->
+    <div id="view-StampError">
+        <h3>Stamp Inconsistencies</h3>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th scope="col">Employee Id</th>
+                    <th scope="col">Date</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Timestamp</th>
+                    <th scope="col">Error message</th>
+                </tr>
+            </thead>
+            <tbody id="tbody-StampError">
+                <!--DATA ROWS -->
+            </tbody>
+        </table>
+    </div>
+
+    <!--VIEW: Show time evaluation results -->
+    <div id="view-TimeResult">
+        <h3>Time Evaluation Results</h3>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th scope="col">Employee Id</th>
+                    <th scope="col">Date</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Code</th>
+                    <th scope="col">Amount</th>
+                </tr>
+            </thead>
+            <tbody id="tbody-TimeResult">
+
+            </tbody>
+        </table>
+    </div>
+    <!--VIEW: Stamp list -->
+    <div id="view-StampList">
+        <h3>Upload and Execution Commands</h3>
+        <div id=view-UploadStamp>
+            <input type="file" id="input-uploadStamp" accept=".txt">
+        </div>  
+        <div id=view-Evaluation>
+            <button id="btn-evaluation">Time Evaluation</button>
+        </div>   
+        <h3>Clock Timestamps</h3>     
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th scope="col">Group</th>
+                    <th scope="col">Employee Id</th>  
+                    <th scope="col">I/O</th>                    
+                    <th scope="col">Timestamp</th>
+                    <th scope="col">
+                        <button id="btn-NewStamp" type="button" class="btn btn-success"><i class="fas fa-edit">New</i></button>                        
+                    </th>
+                </tr>
+            </thead>
+            <tbody id="tbody-StampList">
+                <!--DATA ROWS -->
+            </tbody>
+        </table>
+    </div>
+</div>
+    
+{% endblock %}
+
+{% block script %}
+    <script src="{% static 'shifts/shifts.js' %}"></script>
+{% endblock %}
